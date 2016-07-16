@@ -94,7 +94,6 @@ void setup()
 	
 	ntpClock = new NTPClock(ntpProvider);
 	
-	
 }
 
 void handleHTTPRequest(EthernetClient * client, String& data)
@@ -177,6 +176,19 @@ void handleHTTPRequest(EthernetClient * client, String& data)
 	else if(key == "offset" && value != "")
 	{
 		ntpClock->setTimezoneOffset(value.toInt());
+		
+		client->println("HTTP/1.1 200 OK");
+		client->println("Content-Type: text/json");
+		client->println();
+		
+		client->print("{ ");
+		client->print("status = \"OK\"");
+		client->print(" }");
+		
+	}
+	else if(key == "sync")
+	{
+		ntpClock->synchronize();
 		
 		client->println("HTTP/1.1 200 OK");
 		client->println("Content-Type: text/json");
