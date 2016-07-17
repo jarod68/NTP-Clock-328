@@ -109,7 +109,7 @@ void setOffsetHandler (EthernetClient * client, String& variable, String& value)
 	client->println();
 	
 	client->print("{ ");
-	client->print("status = \"OK\"");
+	client->print("\"status\" : \"OK\"");
 	client->print(" }");
 }
 
@@ -122,7 +122,7 @@ void syncHandler (EthernetClient * client, String& variable, String& value)
 	client->println();
 	
 	client->print("{ ");
-	client->print("status = \"OK\"");
+	client->print("\"status\" : \"OK\"");
 	client->print(" }");
 }
 
@@ -134,16 +134,16 @@ void getHandler (EthernetClient * client, String& variable, String& value)
 	
 	client->print("{ ");
 	
-	client->print("hours = ");
+	client->print("\"hours\" : ");
 	client->print(ntpClock->getHours_UTC());
 	
-	client->print(" , minutes = ");
+	client->print(" , \"minutes\" : ");
 	client->print(ntpClock->getMinutes());
 	
-	client->print(" , seconds = ");
+	client->print(" , \"seconds\" : ");
 	client->print(ntpClock->getSeconds());
 	
-	client->print(" , offset = ");
+	client->print(" , \"offset\" : ");
 	client->print(ntpClock->getTimezoneOffset());
 	
 	client->print(" }");
