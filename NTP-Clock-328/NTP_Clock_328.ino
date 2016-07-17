@@ -146,6 +146,9 @@ void getHandler (EthernetClient * client, String& variable, String& value)
 	client->print(" , \"offset\" : ");
 	client->print(ntpClock->getTimezoneOffset());
 	
+	client->print(" , \"PosixTimestamp\" : ");
+	client->print(ntpClock->getPosixTimestamp());
+	
 	client->print(" }");
 	
 }
