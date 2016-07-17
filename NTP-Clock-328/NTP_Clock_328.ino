@@ -46,12 +46,17 @@
 #error Platform not defined
 #endif // end IDE
 
+#include <EEPROM.h>
 #include <SPI.h>
 #include <TM1637Display.h>
 #include <Ethernet.h>
 
 #include "NTPClock.h"
 #include "NTPClient.h"
+
+// EEPROM
+#define TIMEZONE_OFFSET_VALUE_EEPROM_ADDR	(0)
+#define TIMEZONE_OFFSET_FLAG_EEPROM_ADDR	(TIMEZONE_OFFSET_VALUE_EEPROM_ADDR + 1)
 
 // Prototypes
 
@@ -102,7 +107,10 @@ struct httpHandler handlers[] =
 
 void setOffsetHandler (EthernetClient * client, String& variable, String& value)
 {
-	ntpClock->setTimezoneOffset(value.toInt());
+	unsigned int offset = value.toInt();
+	ntpClock->setTimezoneOffset(offset);
+	EEPROM.write(TIMEZONE_OFFSET_VALUE_EEPROM_ADDR, offset);
+	EEPROM.write(TIMEZONE_OFFSET_FLAG_EEPROM_ADDR, 0x01);
 	
 	client->println("HTTP/1.1 200 OK");
 	client->println("Content-Type: text/json");
@@ -163,6 +171,9 @@ void setup()
 	
 	ntpProvider = new NTPClient(NTP_IP);
 	ntpClock = new NTPClock(ntpProvider);
+	
+	if (EEPROM.read(TIMEZONE_OFFSET_FLAG_EEPROM_ADDR) == 0x01)
+		ntpClock->setTimezoneOffset(EEPROM.read(TIMEZONE_OFFSET_VALUE_EEPROM_ADDR));
 	
 }
 
