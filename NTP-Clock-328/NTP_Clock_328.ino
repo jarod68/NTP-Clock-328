@@ -19,31 +19,31 @@
 
 // Core library for code-sense - IDE-based
 #if defined(WIRING) // Wiring specific
-    #include "Wiring.h"
+#include "Wiring.h"
 #elif defined(MAPLE_IDE) // Maple specific
-    #include "WProgram.h"
+#include "WProgram.h"
 #elif defined(MPIDE) // chipKIT specific
-    #include "WProgram.h"
+#include "WProgram.h"
 #elif defined(DIGISPARK) // Digispark specific
-    #include "Arduino.h"
+#include "Arduino.h"
 #elif defined(ENERGIA) // LaunchPad specific
-    #include "Energia.h"
+#include "Energia.h"
 #elif defined(LITTLEROBOTFRIENDS) // LittleRobotFriends specific
-    #include "LRF.h"
+#include "LRF.h"
 #elif defined(MICRODUINO) // Microduino specific
-    #include "Arduino.h"
+#include "Arduino.h"
 #elif defined(SPARK) || defined(PARTICLE) // Particle / Spark specific
-    #include "Arduino.h"
+#include "Arduino.h"
 #elif defined(TEENSYDUINO) // Teensy specific
-    #include "Arduino.h"
+#include "Arduino.h"
 #elif defined(REDBEARLAB) // RedBearLab specific
-    #include "Arduino.h"
+#include "Arduino.h"
 #elif defined(ESP8266) // ESP8266 specific
-    #include "Arduino.h"
+#include "Arduino.h"
 #elif defined(ARDUINO) // Arduino 1.0 and 1.5 specific
-    #include "Arduino.h"
+#include "Arduino.h"
 #else // error
-    #error Platform not defined
+#error Platform not defined
 #endif // end IDE
 
 #include <SPI.h>
@@ -91,7 +91,7 @@ struct httpHandler
 
 struct httpHandler handlers[] =
 {
-
+	
 	{"offset",	 &setOffsetHandler},
 	{"sync",	 &syncHandler},
 	{"get",		 &getHandler},
@@ -165,10 +165,10 @@ void setup()
 
 void handleHTTPRequest(EthernetClient * client, String& data)
 {
-
+	
 	String key = "";
 	String value = "";
-
+	
 	boolean hasProperty = false;
 	boolean hasValue = false;
 	
@@ -231,7 +231,7 @@ void loop()
 	uint8_t d1 = display.encodeDigit(hours%10);
 	hours/=10;
 	uint8_t d2 = display.encodeDigit(hours%10);
-
+	
 	uint8_t d3 = display.encodeDigit(minutes%10);
 	minutes/=10;
 	uint8_t d4 = display.encodeDigit(minutes%10);
@@ -256,7 +256,7 @@ void loop()
 		
 		while (client.connected()) {
 			if (client.available()) {
-
+				
 				char c = client.read();
 				//Serial.print(c);
 				// if we've gotten to the end of the line (received a newline
@@ -270,22 +270,22 @@ void loop()
 					break;
 					
 				}
-
-					if (!requestMethodParsed)
-					{
-						if (c == ' ')
-							requestMethodParsed = true;
-						else
-							requestMethod +=c;
-					}
-					else if (!requestValueParsed)
-					{
-						if (c == ' ')
-							requestValueParsed = true;
-						else
-							requestValue +=c;
-					}
-
+				
+				if (!requestMethodParsed)
+				{
+					if (c == ' ')
+						requestMethodParsed = true;
+					else
+						requestMethod +=c;
+				}
+				else if (!requestValueParsed)
+				{
+					if (c == ' ')
+						requestValueParsed = true;
+					else
+						requestValue +=c;
+				}
+				
 			}
 		}
 		// give the web browser time to receive the data
