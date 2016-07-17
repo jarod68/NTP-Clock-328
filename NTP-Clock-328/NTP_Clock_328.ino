@@ -53,45 +53,112 @@
 #include "NTPClock.h"
 #include "NTPClient.h"
 
-// Module connection pins (Digital Pins)
+// Prototypes
+
+void setup();
+void loop();
+void handleHTTPRequest(EthernetClient * client, String& data);
+void setOffsetHandler (EthernetClient * client, String& variable, String& value);
+void syncHandler (EthernetClient * client, String& variable, String& value);
+void getHandler (EthernetClient * client, String& variable, String& value);
+
+// TM1637 pinout (Digital Pins)
 #define CLK 3
 #define DIO 8
 
-// The amount of time (in milliseconds) between tests
-#define TEST_DELAY   2000
-
-const uint8_t SEG_DONE[] = {
-	SEG_B | SEG_C | SEG_D | SEG_E | SEG_G,           // d
-	SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F,   // O
-	SEG_C | SEG_E | SEG_G,                           // n
-	SEG_A | SEG_D | SEG_E | SEG_F | SEG_G            // E
-};
-
-
+// Display instance
 TM1637Display display(CLK, DIO);
 
-
-/************ ETHERNET STUFF ************/
+// Ethernet stuff
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 byte ip[] = { 192, 168, 0, 177 };
 EthernetServer server(80);
 
+// NTP provider
 NTPClient * ntpProvider = NULL;
+
+// IP of NTP server to fetch
+#define NTP_IP "145.238.203.10"
+
+// The NTP clock
 NTPClock * ntpClock = NULL;
 
-// Add setup code
+struct httpHandler
+{
+	String command;
+	void  (* callback) (EthernetClient *, String&, String&);
+};
+
+struct httpHandler handlers[] =
+{
+
+	{"offset",	 &setOffsetHandler},
+	{"sync",	 &syncHandler},
+	{"get",		 &getHandler},
+	{"",		 &getHandler}
+	
+	
+};
+
+void setOffsetHandler (EthernetClient * client, String& variable, String& value)
+{
+	ntpClock->setTimezoneOffset(value.toInt());
+	
+	client->println("HTTP/1.1 200 OK");
+	client->println("Content-Type: text/json");
+	client->println();
+	
+	client->print("{ ");
+	client->print("status = \"OK\"");
+	client->print(" }");
+}
+
+void syncHandler (EthernetClient * client, String& variable, String& value)
+{
+	ntpClock->synchronize();
+	
+	client->println("HTTP/1.1 200 OK");
+	client->println("Content-Type: text/json");
+	client->println();
+	
+	client->print("{ ");
+	client->print("status = \"OK\"");
+	client->print(" }");
+}
+
+void getHandler (EthernetClient * client, String& variable, String& value)
+{
+	client->println("HTTP/1.1 200 OK");
+	client->println("Content-Type: text/json");
+	client->println();
+	
+	client->print("{ ");
+	
+	client->print("hours = ");
+	client->print(ntpClock->getHours_UTC());
+	
+	client->print(" , minutes = ");
+	client->print(ntpClock->getMinutes());
+	
+	client->print(" , seconds = ");
+	client->print(ntpClock->getSeconds());
+	
+	client->print(" , offset = ");
+	client->print(ntpClock->getTimezoneOffset());
+	
+	client->print(" }");
+	
+}
+
 void setup()
 {
 	Serial.begin(115200);
 	display.setBrightness(0x0f);
 	
-	
-	// Debugging complete, we start the server!
 	Ethernet.begin(mac, ip);
 	server.begin();
 	
-	ntpProvider = new NTPClient("145.238.203.10");
-	
+	ntpProvider = new NTPClient(NTP_IP);
 	ntpClock = new NTPClock(ntpProvider);
 	
 }
@@ -133,102 +200,28 @@ void handleHTTPRequest(EthernetClient * client, String& data)
 		}
 		
 	}
-
-	if(key == "hours" && value != "")
+	struct httpHandler handler;
+	for ( unsigned int c = 0; c < sizeof(handlers); c++)
 	{
-
+		handler = handlers[c];
 		
-		client->println("HTTP/1.1 503 OK");
-		client->println("Content-Type: text/json");
-		client->println();
-		
-		client->print("{ ");
-		client->print("status = \"NOK\"");
-		client->print(" }");
-
-	}
-	else if(key == "minutes" && value != "")
-	{
-		ntpClock->setTimezoneOffset(2);
-		
-		client->println("HTTP/1.1 503 OK");
-		client->println("Content-Type: text/json");
-		client->println();
-		
-		client->print("{ ");
-		client->print("status = \"NOK\"");
-		client->print(" }");
-		
-	}
-	else if(key == "seconds" && value != "")
-	{
-		ntpClock->setTimezoneOffset(2);
-		
-		client->println("HTTP/1.1 503 OK");
-		client->println("Content-Type: text/json");
-		client->println();
-		
-		client->print("{ ");
-		client->print("status = \"NOK\"");
-		client->print(" }");
-		
-	}
-	else if(key == "offset" && value != "")
-	{
-		ntpClock->setTimezoneOffset(value.toInt());
-		
-		client->println("HTTP/1.1 200 OK");
-		client->println("Content-Type: text/json");
-		client->println();
-		
-		client->print("{ ");
-		client->print("status = \"OK\"");
-		client->print(" }");
-		
-	}
-	else if(key == "sync")
-	{
-		ntpClock->synchronize();
-		
-		client->println("HTTP/1.1 200 OK");
-		client->println("Content-Type: text/json");
-		client->println();
-		
-		client->print("{ ");
-		client->print("status = \"OK\"");
-		client->print(" }");
-		
-	}
-	else
-	{
-		client->println("HTTP/1.1 200 OK");
-		client->println("Content-Type: text/json");
-		client->println();
-
-		client->print("{ ");
-		
-		client->print("hours = ");
-		client->print(ntpClock->getHours_UTC());
-		
-		client->print(" , minutes = ");
-		client->print(ntpClock->getMinutes());
-		
-		client->print(" , seconds = ");
-		client->print(ntpClock->getSeconds());
-		
-		client->print(" , offset = ");
-		client->print(ntpClock->getTimezoneOffset());
-		
-		client->print(" }");
+		if (key == handler.command)
+		{
+			handler.callback (client, key, value);
+			
+			return; // don't fall in ERROR_HANDLER
+		}
 		
 	}
 	
+ERROR_HANDLER:
+	client->println("HTTP/1.1 500 Internal Server Error");
+	client->println();
 }
 
 
 boolean colon = false;
 
-// Add loop code
 void loop()
 {
 	
