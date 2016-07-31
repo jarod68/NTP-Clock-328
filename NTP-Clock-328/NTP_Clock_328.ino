@@ -166,7 +166,17 @@ void setup()
 	Serial.begin(115200);
 	display.setBrightness(0x0f);
 	
-	Ethernet.begin(mac, ip);
+	if (Ethernet.begin(mac) == 0)
+	{
+		Serial.println("Failed to configure Ethernet using DHCP");
+		// no point in carrying on, so do nothing forevermore:
+		while(true)
+			;
+		
+		
+	}
+	Serial.println(Ethernet.localIP());
+
 	server.begin();
 	
 	ntpProvider = new NTPClient(NTP_IP);
