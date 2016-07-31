@@ -8,14 +8,8 @@
 ** -------------------------------------------------------------------------*/
 #include "NTPClock.h"
 #include <Arduino.h>
-#include <MsTimer2.h>
 
 #define TWENTYFOURHRMILLIS 86400000
-
-void timerCallback()
-{
-	Serial.println("Tick");
-}
 
 NTPClock::NTPClock(NTPClient * ntpClient) :_ntpClient(ntpClient),
 										_localTimeReference(0),
@@ -24,8 +18,6 @@ NTPClock::NTPClock(NTPClient * ntpClient) :_ntpClient(ntpClient),
 										_synchronizationTimestamp(0)
 {
 	this->synchronize();
-	MsTimer2::set(2000, timerCallback);
-	MsTimer2::start();
 }
 
 NTPClock	::	NTPClock	(NTPClient * ntpClient, unsigned int timezoneOffset) :

@@ -50,6 +50,7 @@
 #include <SPI.h>
 #include <TM1637Display.h>
 #include <Ethernet.h>
+#include <MsTimer2.h>
 
 #include "NTPClock.h"
 #include "NTPClient.h"
@@ -57,6 +58,9 @@
 // EEPROM
 #define TIMEZONE_OFFSET_VALUE_EEPROM_ADDR	(0)
 #define TIMEZONE_OFFSET_FLAG_EEPROM_ADDR	(TIMEZONE_OFFSET_VALUE_EEPROM_ADDR + 1)
+
+// Synchronization
+#define SYNCHRONIZE_PERIOD_S				(1 * 3600)
 
 // Prototypes
 
@@ -161,6 +165,18 @@ void getHandler (EthernetClient * client, String& variable, String& value)
 	
 }
 
+void timerCallback()
+{
+	Serial.println("Sync...");
+	ntpClock->synchronize();
+	Serial.print("Time : ");
+	Serial.print(ntpClock->getHours());
+	Serial.print(":");
+	Serial.print(ntpClock->getMinutes());
+	Serial.print(":");
+	Serial.println(ntpClock->getSeconds());
+}
+
 void setup()
 {
 	Serial.begin(115200);
@@ -185,6 +201,9 @@ void setup()
 	if (EEPROM.read(TIMEZONE_OFFSET_FLAG_EEPROM_ADDR) == 0x01)
 		ntpClock->setTimezoneOffset(EEPROM.read(TIMEZONE_OFFSET_VALUE_EEPROM_ADDR));
 	
+	
+	MsTimer2::set(SYNCHRONIZE_PERIOD_S * 1000, &timerCallback);
+	MsTimer2::start();
 }
 
 void handleHTTPRequest(EthernetClient * client, String& data)
