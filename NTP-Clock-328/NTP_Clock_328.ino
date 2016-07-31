@@ -76,7 +76,7 @@ TM1637Display display(CLK, DIO);
 
 // Ethernet stuff
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-byte ip[] = { 192, 168, 0, 177 };
+
 EthernetServer server(80);
 
 // NTP provider
