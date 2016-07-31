@@ -169,15 +169,15 @@ void setup()
 	if (Ethernet.begin(mac) == 0)
 	{
 		Serial.println("Failed to configure Ethernet using DHCP");
-		// no point in carrying on, so do nothing forevermore:
-		while(true)
-			;
-		
-		
 	}
-	Serial.println(Ethernet.localIP());
+	else
+	{
+		Serial.println(Ethernet.localIP());
+		server.begin();
 
-	server.begin();
+	}
+	
+	// Even if the there is no network running, the clock runs without sync
 	
 	ntpProvider = new NTPClient(NTP_IP);
 	ntpClock = new NTPClock(ntpProvider);
